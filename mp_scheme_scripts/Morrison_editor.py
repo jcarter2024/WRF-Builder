@@ -16,42 +16,54 @@ def subroutine_finder(filepath, ROUTINE_NAME):
                     start = i
 
     return start, end
+
+
+def deconstruct_path(filepath):
+    filename_ext = filepath.split('/')[-1]
+    path         = filepath[:-len(filename_ext)]
+    filenameonly = filename_ext.split('.')[0]
+    return path, filename_ext, filenameonly
+
+
+
+def increase_fn(filepath):
+    """Strips the filename and adds one to the end"""
+    
+    #first deconstruct the old path 
+    path, filename_ext, filenameonly = deconstruct_path(filepath)
+    
+    letters = filenameonly.rstrip('0123456789')
+    numbs   = filenameonly[len(letters):]
+    
+    #incase there is no number
+    if len(numbs) == 0:
+        numbs=0
+
+    numbs_new       = str(int(numbs)+1)
+    filenameonlynew = letters+numbs_new
+    
+    filepathnew     = path+filenameonlynew+'.'+filename_ext.split('.')[1]
+    
+    return filepathnew
 ### =============================================================
 
 
 
 #USER VARIABLES
-FILEPATH = '../Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F'
+FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F'
 
 
 ######CODE
-
-#deconstruct old filename and add to the suffix
-filename     = FILEPATH.split('/')[-1]
-filepath     = FILEPATH[:-len(filename)]
-filenameonly = filename.split('.')[0]
-letters      = filenameonly.rstrip('0123456789')
-numbs        = filenameonly[len(head):]
-
-#incase there is no number
-if len(numbs) == 0:
-    numbs=0
-    
-#add one to suffix
-numbs_new = str(int(numbs)+1)
-
-#reconstruct and copy old file to new filename
-FILEPATHNEW = filepath+letters+numbs_new+filename[-2:]
+FILEPATHNEW = increase_fn(FILEPATH)
 shutil.copy(FILEPATH, FILEPATHNEW)
 
 print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
-print("I will work on the old file", filenameonly) 
+print("I will work on the old file") 
 
 
 
 
-
-variable_to_extract = sys.argv[1] #first argument passed from shell
+# variable_to_extract = sys.argv[1] #first argument passed from shell
 
 
 #get the start and end points of the interior subroutine
@@ -59,5 +71,5 @@ ROUTINE_NAME = 'SUBROUTINE MP_MORR_TWO_MOMENT'
 code_qualities = {}
 
 code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'] = subroutine_finder(
-    '../Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F', 'SUBROUTINE MP_MORR_TWO_MOMENT')
+    FILEPATH, 'SUBROUTINE MP_MORR_TWO_MOMENT')
 
