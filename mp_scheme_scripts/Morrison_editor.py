@@ -10,9 +10,11 @@ FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' # <<<------- C
 #-----------------------------------------------------> FUNCTIONS <---------------------------------------------------------------
 def subroutine_finder(filepath, ROUTINE_NAME):
     """Locate line numbers for subroutines"""
+    start = 0
+    end   = 0
     with open(filepath, 'r') as fn:
         for (i, line) in enumerate(fn):
-            if ROUTINE_NAME.upper() in line or ROUTINE_NAME.lower() in line:
+            if ROUTINE_NAME in line or ROUTINE_NAME.upper() in line or ROUTINE_NAME.lower() in line:
                 if '!' not in line:
                     tmp = line.split()
                     if 'END' in tmp:
@@ -185,7 +187,6 @@ print("checking for the current line numbers of the interior subroutine", ROUTIN
 code_qualities['MORR_TWO_MOMENT_MICRO_start'], code_qualities['MORR_TWO_MOMENT_MICRO_end'] = subroutine_finder(FILEPATH, 'SUBROUTINE MORR_TWO_MOMENT_MICRO')
 
 
-
 # STEP 3 = get the line number of the final call to our variable, check its within the interior subroutine
  #----------------------------------------------------------------
 var_oi = sys.argv[1]
@@ -221,9 +222,16 @@ with open(FILEPATH, 'r') as fn:
     
     if varpresent == 'yes':
         print('var is present, skipping this part...')
+        print('NOTE!! This code currently assumes that the subroutine defntn and call have matching argument lists!')
     else:
         print('var not present in argument list, I\'ll add it to the end')
         line_write(FILEPATH, ','+var_oi, code_qualities['MORR_TWO_MOMENT_MICRO_argsend'])
-
+        
+        print("I'll also add a corresponding variable to the argument list of this subroutine in the CALL")
+        #get the location of the call to micro
+        code_qualities['MORR_TWO_MOMENT_MICRO_call'] = subroutine_finder(FILEPATH, 'call MORR_TWO_MOMENT_MICRO')[0]
+        #find the bracket loc
+        code_qualities['MORR_TWO_MOMENT_MICRO_callargstart'], code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'] = bracket_find(FILEPATH, code_qualities['MORR_TWO_MOMENT_MICRO_call'])
+        line_write(FILEPATH, ','+var_oi, code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'])
 
 
