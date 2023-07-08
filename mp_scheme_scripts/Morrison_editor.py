@@ -1,7 +1,12 @@
 import sys
 import shutil
 
-### FUNCTIONS =============================================================
+# !!!!!!!!!!!!!!!!!!! ** USER VARIABLES ** !!!!!!!!!!!!!!!!!!!!!!!#
+FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' #
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
+
+
+#-----------------------------------------------------> FUNCTIONS <---------------------------------------------------------------
 def subroutine_finder(filepath, ROUTINE_NAME):
     """Locate line numbers for subroutines"""
     with open(filepath, 'r') as fn:
@@ -45,15 +50,11 @@ def increase_fn(filepath):
     filepathnew     = path+filenameonlynew+'.'+filename_ext.split('.')[1]
     
     return filepathnew
-### =============================================================
 
 
 
-#USER VARIABLES
-FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F'
+#----------------------------------------------------> C O D E <------------------------------------------------------------------
 
-
-######CODE
 FILEPATHNEW = increase_fn(FILEPATH)
 shutil.copy(FILEPATH, FILEPATHNEW)
 
