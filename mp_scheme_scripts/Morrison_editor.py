@@ -54,7 +54,10 @@ def increase_fn(filepath):
 
 
 #----------------------------------------------------> C O D E <------------------------------------------------------------------
+ # STEP 1 = Backup the old file
+ #--------------------------------
 
+print()
 FILEPATHNEW = increase_fn(FILEPATH)
 shutil.copy(FILEPATH, FILEPATHNEW)
 
@@ -63,14 +66,21 @@ print("I will work on the old file")
 
 
 
-
-# variable_to_extract = sys.argv[1] #first argument passed from shell
-
-
-#get the start and end points of the interior subroutine
-ROUTINE_NAME = 'SUBROUTINE MP_MORR_TWO_MOMENT'
+# STEP 2 = get the start and end points of the interior subroutine
+ #----------------------------------------------------------------
+print()
+ROUTINE_NAME   = 'SUBROUTINE MP_MORR_TWO_MOMENT'
 code_qualities = {}
 
-code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'] = subroutine_finder(
-    FILEPATH, 'SUBROUTINE MP_MORR_TWO_MOMENT')
+print("checking for the current line numbers of the interior subroutine", ROUTINE_NAME)
+code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'] = subroutine_finder(FILEPATH, 'SUBROUTINE MP_MORR_TWO_MOMENT')
+
+print()
+print("Now locating your var")
+#find the final edited position of the user suggested variable
+var_oi = sys.argv[1] #first argument passed from shell
+print(var_oi)
+
+
+
 

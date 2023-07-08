@@ -4,7 +4,7 @@
 supported=("Morrison" "ISHMAEL" "P3")
 read -p "Would you like me to perform some edits? " confirm
 if [ $confirm == y ]; then
-    read -p "What microphysics scheme? 
+    read -p "Which microphysics scheme? 
     Morrison
     ISHMAEL
     P3
@@ -19,10 +19,18 @@ if [ $confirm == y ]; then
     fi
 fi
 
+#Morrison edits here:::
 if [ $schemetype == "Morrison" ]; then 
-echo "Opening Morrison_editor python file..."
-python3 mp_scheme_scripts/Morrison_editor.py
-fi 
+    echo ""
+    echo "Opening Morrison_editor python file..."
+
+    var_oi=$1
+    if [[ -n "$var_oi" ]]; then
+        python3 mp_scheme_scripts/Morrison_editor.py $var_oi
+    else
+        echo "argument error"
+    fi 
+fi
 
 echo "Complete"
 
