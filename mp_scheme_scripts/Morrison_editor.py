@@ -164,6 +164,16 @@ def line_write(filepath, string, linenumber):
     shutil.copy(filepath, filepathout)
     shutil.copy('temp', str(filepath))
     
+    
+def real_search(filepath, linestart, lineend):
+    #get location of last Real call 
+    with open(filepath, 'r') as fn:
+        for (i, line) in enumerate(fn):
+            if linestart <= i <= lineend:
+                if 'REAL ' in line:
+                    final_inst  = i
+    return final_inst
+    
 #----------------------------------------------------> C O D E <------------------------------------------------------------------
  # STEP 1 = Backup the old file
  #--------------------------------
@@ -235,3 +245,28 @@ with open(FILEPATH, 'r') as fn:
         line_write(FILEPATH, ','+var_oi, code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'])
 
 
+ # STEP 5 = create a 3d? variable in the outer routine
+#----------------------------------------------------------------
+#first find the location of the outer subroutine 
+ROUTINE_NAME   = 'SUBROUTINE MP_MORR_TWO_MOMENT'
+code_qualities = {}
+
+print("checking for the current line numbers of the interior subroutine", ROUTINE_NAME)
+code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'] = subroutine_finder(FILEPATH, ROUTINE_NAME)
+
+#check if we have put in a real segment previously 
+code_qualities['our_real_list_end'] = 0
+
+with open(FILEPATH, 'r') as fn:
+    for (i, line) in enumerate(fn):
+        if '! ==== MP EDITOR VARIABLES END ===== !' in line: #we've amended previously, find latest real 
+            code_qualities['our_real_list_end'] = i-1
+            break 
+            
+if code_qualities['our_real_list_end'] == 0: #not edited before, find the last position of REALS 
+    real_ln = real_search(FILEPATH, code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'])
+    line_write(FILEPATH, '! ==== MP EDITOR VARIABLES END ===== !', real_ln+1)
+    code_qualities['our_real_list_end'] = real_ln
+            
+## code_qualities['our_real_list_end'] tells us where we should edit 
+line_write(FILEPATH, '   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi, code_qualities['our_real_list_end']+1)
