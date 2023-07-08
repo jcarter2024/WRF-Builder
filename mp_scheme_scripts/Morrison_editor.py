@@ -3,7 +3,7 @@ import shutil
 import re
 
 # !!!!!!!!!!!!!!!!!!! ** USER VARIABLES ** !!!!!!!!!!!!!!!!!!!!!!!#
-FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' #
+FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' # <<<------- Change before running 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 
 
@@ -147,6 +147,21 @@ def bracket_find(filepath, linestart):
     return argstart, argsend
 
 
+def line_write(filepath, string, linenumber):
+    temp = open('temp', 'w')
+    with open(filepath, 'r') as f:
+        for i, line in enumerate(f):
+            if i == linenumber: #REAL end +1
+                temp.write(string+'\n')
+            temp.write(line)
+    temp.close()
+
+    #move temp to file
+    filepathout = increase_fn(filepath)
+    print(filepath,'->',  filepathout)
+    shutil.copy(filepath, filepathout)
+    shutil.copy('temp', str(filepath))
+    
 #----------------------------------------------------> C O D E <------------------------------------------------------------------
  # STEP 1 = Backup the old file
  #--------------------------------
@@ -205,9 +220,10 @@ with open(FILEPATH, 'r') as fn:
         
     
     if varpresent == 'yes':
-        print('var is present, skipping')
+        print('var is present, skipping this part...')
     else:
-        print('var not present in argument list')
+        print('var not present in argument list, I\'ll add it to the end')
+        line_write(FILEPATH, ','+var_oi, code_qualities['MORR_TWO_MOMENT_MICRO_argsend'])
 
 
 
