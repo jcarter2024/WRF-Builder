@@ -233,16 +233,32 @@ def extract(filename, phrase):
 def bracket_find(filepath, linestart):
     """Supply the subroutine start line, retrieve the line where the arguments (in brackets) start and stop"""
     bracket_count = 99
+    argstart, argsend = 0, 0 
     with open(filepath, 'r') as fn:
         for (i, line) in enumerate(fn):
             if linestart <= i:
- 
+           
                 #initialise our open bracket
                 if '(' in line and bracket_count == 99:
                     bracket_count = 1
                     argstart = i
-                elif '(' in line:
+                elif '(' in line and '!' not in line:
                     bracket_count +=1
+                elif '(' in line and '!' in line:
+                    tmp = line.split()
+                    #iterate to determine if ! comes before )
+                    index_a = 0
+                    index_b = 0
+                    for (i, l) in enumerate(tmp):
+                        if '!' in l:
+                            index_a = i
+                        elif ')' in l:
+                            index_b = i
+                    if index_a < index_b:
+                        #bracket is within a comment
+                        pass
+                    else:
+                        bracket_count += 1
 
                 #track the close bracket that matches
                 if ')' in line and '!' not in line:
@@ -268,7 +284,6 @@ def bracket_find(filepath, linestart):
                 if bracket_count == 0:
                     argsend  = i
                     break
-                
     return argstart, argsend
 
 
