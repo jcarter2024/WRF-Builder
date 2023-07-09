@@ -226,9 +226,7 @@ if proceed == 'yes':
         line_write(FILEPATH, ','+var_oi+'='+var_oi+'&', code_qualities['mp_morr_two_moment_argsend'],
                records_dict['module_microphysics_driver.F'])
     
-    
-
-    
+     
     
 # STEP 8 = add to args list in solve_em
 #----------------------------------------------------------------   
@@ -244,7 +242,71 @@ print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
 print("I will work on the old file") 
 
 
+#find where the microphysics driver is called
+#locate the calling subroutine     
+code_qualities = {}
+
+#get location of microphysics driver subroutine
+code_qualities['microphysics_driver_call'] = subroutine_finder(FILEPATH, 'CALL microphysics_driver(')[0]
+    
+code_qualities['microphysics_driver_argstart'], code_qualities['microphysics_driver_argsend'] = (
+bracket_find(FILEPATH, code_qualities['microphysics_driver_call']))
+    
+#add our variable to the end of the arg list if it doesn't already exist 
+print()
+print('\n Writing variable to argument list of microphysics driver call')
+skipit = 'no'
+with open(FILEPATH, 'r') as fn:
+    for (i, line) in enumerate(fn):
+        if  code_qualities['microphysics_driver_argstart'] < i < code_qualities['microphysics_driver_argsend']:
+            if var_oi in line:
+                print("Variable definition already present, skipping")
+                skipit = 'yes'
+                break
+
+if skipit == 'no':
+    line_write(FILEPATH, ','+var_oi+'=grid%'+var_oi+'&', code_qualities['microphysics_driver_argsend'],
+           records_dict['solve_em.F'])
+    #YES I'm aware that this bisects some arguments, ultimately the code works and isn't that the aim? ;)
+
+    
+# STEP 9 = Amend registry to include new var
+#----------------------------------------------------------------   
+#changing to new file 
+FILEPATH = 'Build_WRF/WRF/Registry/Registry-Copy1.EM_COMMON'
+    
+print()
+print("Now editing the registry (Registry.EM_COMMON")
+FILEPATHNEW = increase_fn(FILEPATH)
+shutil.copy(FILEPATH, FILEPATHNEW)
+
+print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
+print("I will work on the old file") 
+
+
+# add in an appropriate place, is there a morrison vars section
+
+
+
+
+#add to the mp scheme vars list - search for line of package   morr_two_moment
+with open(FILEPATH, 'r') as fn:
+    for (i, line) in enumerate(fn):
+        if 'package   morr_two_moment mp_physics==10' in line :
+            print(i, line)
+            if var_oi in line:
+                print('This variable already exists in the registry')
+            else:
+                print('adding to package expectancies [scalar]')
+                line_append(FILEPATH, ',pracg', i, records_dict['Registry.EM_COMMON'])
+
+# STEP 10 = Recompile WRF
+#----------------------------------------------------------------  
+
+
+
 #FINAL STEP 
+#----------------------------------------------------------------  
 #print summary of all line changes 
 summarise(records_dict)
 

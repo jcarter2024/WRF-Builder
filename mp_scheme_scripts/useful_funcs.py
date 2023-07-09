@@ -329,6 +329,52 @@ def line_write(filepath, string, linenumber, records_dict):
                 records_dict[key] +=1
 
     return records_dict
+
+
+def line_append(filepath, string, linenumber, records_dict):
+    """Records dict allows us to see what we have written historically"""
+    temp = open('temp', 'w')
+    with open(filepath, 'r') as f:
+        for i, line in enumerate(f):
+            if i == linenumber: #REAL end +1
+                print()
+                print("!! --------> Writing", string, "on linenumber", i)
+                linestring = str(line.strip())+str(string)+'\n'
+                print(linestring)
+                temp.write(linestring)
+            else:
+                temp.write(line)
+    temp.close()
+
+    #move temp to file
+    filepathout = increase_fn(filepath)
+    print(filepath,'->',  filepathout)
+    shutil.copy(filepath, filepathout)
+    shutil.copy('temp', str(filepath))
+    
+    #add this entry to records dict 
+    if string not in records_dict.keys():
+        records_dict[string] = linenumber 
+    else:
+        if type(records_dict[string]) == list:
+            records_dict[string] .append(linenumber)
+        else:
+            firstlistinst = []
+            firstlistinst.append(records_dict[string])
+            firstlistinst.append(linenumber)
+            records_dict[string] = firstlistinst
+
+    #adjust previous linenumbers if needed
+    for key, val in records_dict.items():
+        if type(val) == list:
+            for (p, ln) in enumerate(val):
+                if linenumber <= ln:
+                    records_dict[key][p] +=1 
+        else:
+            if val >= linenumber:
+                records_dict[key] +=1
+
+    return records_dict
     
     
 def real_search(filepath, linestart, lineend):
