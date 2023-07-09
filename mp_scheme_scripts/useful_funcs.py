@@ -418,7 +418,7 @@ def summarise(records_dict):
             #convert linenumbers to strings
             wheremade = [str(i) for i in wheremade]
 
-            row_format ="{:85}" * (2)
+            row_format ="{:105}" * (2)
             print(row_format.format("Amendment", "Line Number"))
             print(row_format.format("---------", "-----------"))
 
