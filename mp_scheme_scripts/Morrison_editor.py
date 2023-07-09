@@ -39,6 +39,7 @@ code_qualities['MORR_TWO_MOMENT_MICRO_start'], code_qualities['MORR_TWO_MOMENT_M
 # STEP 3 = get the line number of the final call to our variable, check its within the interior subroutine
  #----------------------------------------------------------------
 var_oi = sys.argv[1]
+
 print()
 print("Now locating your var", var_oi)
 #first argument passed from shell
@@ -276,24 +277,67 @@ if skipit == 'no':
 FILEPATH = 'Build_WRF/WRF/Registry/Registry-Copy1.EM_COMMON'
     
 print()
-print("Now editing the registry (Registry.EM_COMMON")
+print("Now editing the registry (Registry.EM_COMMON)")
 FILEPATHNEW = increase_fn(FILEPATH)
 shutil.copy(FILEPATH, FILEPATHNEW)
 
 print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
 print("I will work on the old file") 
+print()
 
 
 # add in an appropriate place, is there a morrison vars section
+units      =  "\"" + sys.argv[2] + "\""
+NETCDFNAME =  "\"" + sys.argv[3] + "\""
+descriptor =  "\"" + sys.argv[4] + "\""
 
+#do not amend
+registry_string = ('state'+'    '+'real'+'   '+var_oi+'     '+'ikj'+'    '+'misc'+'        '+'1'+
+                   '         '+'-'+'      '+'h'+'       '+NETCDFNAME+'    '+descriptor+'        '+units)
 
+#quick check that var isn't already in registry 
 
+hasbeenedited = 'no'
+with open(FILEPATH, 'r') as fn:
+    retrieved = fn.readlines()
+    
+matching_already = [s for s in retrieved if var_oi in s]
+if len(matching_already) > 0:
+    print("!!!!!!! WARNING!!!!!!!   ::    This var might already exist in the registry, check line", retrieved.index(matching_already[0]))
+    print("continue? [y/n]: ")
+    x = input()
+    if x == 'y':
+        pass
+    else:
+        print("Exiting")
+        sys.exit()
+    
+if any('# MY MP EDITOR VARIABLES' in s for s in retrieved):
+            hasbeenedited = 'yes'
 
+#simple case, add below this line 
+if hasbeenedited == 'yes':  
+    matching = [s for s in retrieved if '# MY MP EDITOR VARIABLES' in s]
+    linenum = retrieved.index(matching[0])
+    
+    line_write(FILEPATH, registry_string, linenum, records_dict['Registry.EM_COMMON'])
+    
+    
+#not been edited before, so add in a line 
+else:
+    #get the linenumber for scalars
+    matching = [s for s in retrieved if '# Other Scalars' in s]
+    linenum = retrieved.index(matching[0])
+    
+    #write in our edit line above this ]
+    line_write(FILEPATH, '\n# MY MP EDITOR VARIABLES', linenum-1, records_dict['Registry.EM_COMMON'])
+    line_write(FILEPATH, registry_string, linenum, records_dict['Registry.EM_COMMON'])
+    
+    
 #add to the mp scheme vars list - search for line of package   morr_two_moment
 with open(FILEPATH, 'r') as fn:
     for (i, line) in enumerate(fn):
         if 'package   morr_two_moment mp_physics==10' in line :
-            print(i, line)
             if var_oi in line:
                 print('This variable already exists in the registry')
             else:
