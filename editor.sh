@@ -28,9 +28,14 @@ if [ $schemetype == "Morrison" ]; then
     if [[ -n "$var_oi" ]]; then
         python3 mp_scheme_scripts/Morrison_editor.py $var_oi
     else
-        echo "argument error"
+        echo ""
+        echo "--------------------------"
+        echo "-->  Argument Error <----"
+        echo "--------------------------"
+        echo ""
+        echo " Please ensure that a variable is specified"
     fi 
 fi
 
-echo "Complete"
+echo "Program Close"
 
