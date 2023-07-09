@@ -210,3 +210,19 @@ cd ../
 #run the python code
 # python3 MAIN.py 
 ./editor.sh
+
+#allow for recompilation after edits
+read -p "I can recompile WRF, shall I do that now? " confirm
+if  [ $confirm == "y" ]; then 
+    cd "$bw_dir/WRF"
+    if [ -f "main/wrf.exe" ]; then
+        read -p "I think WRF is already built, proceed? " confirm
+        if [ $confirm == "y" ]; then
+            compile_wrf
+        else
+            echo "skipping"
+        fi
+    else
+        compile_wrf
+    fi
+fi
