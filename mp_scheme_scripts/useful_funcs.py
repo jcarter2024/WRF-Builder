@@ -327,33 +327,46 @@ def real_search(filepath, linestart, lineend):
 
 
 def summarise(records_dict):
+    """Note that records dict is now a dict of dicts!"""
     print()
     print(" ================================================================================= ")
     print("                *********> S U M M A R Y  O F  C H A N G E S <*********")
     print("================================================================================= ")
     print()
 
-    #first create order
-    amendments, wheremade = [], []
-    for key, ln in records_dict.items():
-        if type(ln) == list:
-            for i in ln:
-                amendments.append(key)
-                wheremade.append(i)
+    
+    for file in records_dict.keys():
+        if len(records_dict[file].keys()) > 0:
+            print()
+            print("========================= Changes made to ------>", file)
+
+            #first create order
+            amendments, wheremade = [], []
+            for key, ln in records_dict[file].items():
+                if type(ln) == list:
+                    for i in ln:
+                        amendments.append(key)
+                        wheremade.append(i)
+                else:
+                    amendments.append(key)
+                    wheremade.append(ln)
+
+            #permutate both lists identically 
+            wheremade, amendments = zip(*sorted(zip(wheremade, amendments)))
+
+            #convert linenumbers to strings
+            wheremade = [str(i) for i in wheremade]
+
+            row_format ="{:85}" * (2)
+            print(row_format.format("Amendment", "Line Number"))
+            print(row_format.format("---------", "-----------"))
+
+            for i in range(len(amendments)):
+                print(row_format.format(amendments[i], wheremade[i]))
+                
+            print()
         else:
-            amendments.append(key)
-            wheremade.append(ln)
-
-    #permutate both lists identically 
-    wheremade, amendments = zip(*sorted(zip(wheremade, amendments)))
-
-    #convert linenumbers to strings
-    wheremade = [str(i) for i in wheremade]
-
-    row_format ="{:85}" * (2)
-    print(row_format.format("Amendment", "Line Number"))
-    print(row_format.format("---------", "-----------"))
-    print()
-
-    for i in range(len(amendments)):
-        print(row_format.format(amendments[i], wheremade[i]))
+            pass
+        
+    if sum([len(records_dict[file].keys()) for file in records_dict.keys()]) == 0:
+        print('-----> No changes made')

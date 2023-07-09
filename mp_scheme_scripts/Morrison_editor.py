@@ -5,7 +5,11 @@ from useful_funcs import *
 FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' # <<<------- Change before running 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 
-records_dict = {}
+
+#the records_dict holds dictionaries for each file that can be edited by this code. Any changes are stored here and output at 
+# the end of the programme
+
+records_dict = {'module mp_morr_two_moment.F':{}, 'module_microphysics_driver.F':{}, 'solve_em.F':{}, 'Registry.EM_COMMON':{}}
 
 #----------------------------------------------------> C O D E <------------------------------------------------------------------
  
@@ -70,14 +74,14 @@ with open(FILEPATH, 'r') as fn:
         print('NOTE!! This code currently assumes that the subroutine defntn and call have matching argument lists!')
     else:
         print('var not present in argument list, I\'ll add it to the end')
-        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_argsend'], records_dict)
+        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_argsend'], records_dict['module mp_morr_two_moment.F'])
         
         print("I'll also add a corresponding variable to the argument list of this subroutine in the CALL")
         #get the location of the call to micro
         code_qualities['MORR_TWO_MOMENT_MICRO_call'] = subroutine_finder(FILEPATH, 'call MORR_TWO_MOMENT_MICRO')[0]
         #find the bracket loc
         code_qualities['MORR_TWO_MOMENT_MICRO_callargstart'], code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'] = bracket_find(FILEPATH, code_qualities['MORR_TWO_MOMENT_MICRO_call'])
-        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'],records_dict)
+        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'],records_dict['module mp_morr_two_moment.F'])
 
 
  # STEP 5 = create a 3D variable in the outer routine
@@ -105,7 +109,7 @@ if code_qualities['our_real_list_end'] == 0: #not edited before, find the last p
     print("This is the first time using the MP editor, I'll add in a commented line that will highlight your variables")
     print("It'll look like: ! ==== MP EDITOR VARIABLES END ===== !") 
     real_ln = real_search(FILEPATH, code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'])
-    line_write(FILEPATH, '! ==== MP EDITOR VARIABLES END ===== !', real_ln+1, records_dict)
+    line_write(FILEPATH, '! ==== MP EDITOR VARIABLES END ===== !', real_ln+1, records_dict['module mp_morr_two_moment.F'])
     code_qualities['our_real_list_end'] = real_ln
             
 ## code_qualities['our_real_list_end'] tells us where we should edit 
@@ -121,7 +125,7 @@ with open(FILEPATH, 'r') as fn:
             break
     
     else: 
-        line_write(FILEPATH, '   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi, code_qualities['our_real_list_end']+1, records_dict)
+        line_write(FILEPATH, '   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi, code_qualities['our_real_list_end']+1, records_dict['module mp_morr_two_moment.F'])
 
  # STEP 6 = add to routine args list 
 #----------------------------------------------------------------
@@ -141,14 +145,17 @@ with open(FILEPATH, 'r') as fn:
                 break
 
 if skipit == 'no':
-    line_write(FILEPATH, ','+var_oi+'&', code_qualities['MP_MORR_TWO_MOMENT_argsend'], records_dict)
+    line_write(FILEPATH, ','+var_oi+'&', code_qualities['MP_MORR_TWO_MOMENT_argsend'], records_dict['module mp_morr_two_moment.F'])
 
 
-
+    
 #FINAL STEP 
 #print summary of all line changes 
+summarise(records_dict)
 
-try:
-    summarise(records_dict)
-except:
-    print("------> No changes made")
+    
+ 
+    
+    
+    
+    
