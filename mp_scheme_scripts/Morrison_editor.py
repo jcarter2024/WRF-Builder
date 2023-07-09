@@ -2,7 +2,7 @@ from useful_funcs import *
 
 
 # !!!!!!!!!!!!!!!!!!! ** USER VARIABLES ** !!!!!!!!!!!!!!!!!!!!!!!#
-FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' # <<<------- Change before running 
+FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment.F' # <<<------- Change before running 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 
 
@@ -13,9 +13,9 @@ records_dict = {'module mp_morr_two_moment.F':{}, 'module_microphysics_driver.F'
 
 #----------------------------------------------------> C O D E <------------------------------------------------------------------
  
-    
 # STEP 1 = Backup the old file
 #--------------------------------
+big_bound("module mp_morr_two_moment.F")
 
 print()
 FILEPATHNEW = increase_fn(FILEPATH)
@@ -149,11 +149,13 @@ if skipit == 'no':
     line_write(FILEPATH, ','+var_oi+'&', code_qualities['MP_MORR_TWO_MOMENT_argsend'], records_dict['module mp_morr_two_moment.F'])
 
 
-    
+      
 # STEP 7 = add to args list in microphysics driver
 #----------------------------------------------------------------   
+big_bound("module_microphysics_driver.F")
+
 #changing to new file 
-FILEPATH = 'Build_WRF/WRF/phys/module_microphysics_driver-Copy1.F'
+FILEPATH = 'Build_WRF/WRF/phys/module_microphysics_driver.F'
     
 print()
 print("Now editing microphysics driver")
@@ -231,8 +233,10 @@ if proceed == 'yes':
     
 # STEP 8 = add to args list in solve_em
 #----------------------------------------------------------------   
+big_bound('solve_em.F')
+
 #changing to new file 
-FILEPATH = 'Build_WRF/WRF/dyn_em/solve_em-Copy1.F'
+FILEPATH = 'Build_WRF/WRF/dyn_em/solve_em.F'
     
 print()
 print("Now editing solve_em.F")
@@ -273,8 +277,11 @@ if skipit == 'no':
     
 # STEP 9 = Amend registry to include new var
 #----------------------------------------------------------------   
+
+big_bound('Registry.EM_COMMON')
+
 #changing to new file 
-FILEPATH = 'Build_WRF/WRF/Registry/Registry-Copy1.EM_COMMON'
+FILEPATH = 'Build_WRF/WRF/Registry/Registry.EM_COMMON'
     
 print()
 print("Now editing the registry (Registry.EM_COMMON)")
