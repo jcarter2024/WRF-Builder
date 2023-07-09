@@ -5,6 +5,7 @@ from useful_funcs import *
 FILEPATH = 'Build_WRF/WRF/phys/module_mp_morr_two_moment-Copy1.F' # <<<------- Change before running 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 
+records_dict = {}
 
 #----------------------------------------------------> C O D E <------------------------------------------------------------------
  
@@ -52,7 +53,7 @@ else:
  # STEP 4 = find subroutine argument start/end and check that the variable is in the subroutine arguments list
 #----------------------------------------------------------------
 print()
-print("Checking if the variable is already written into the subroutine's argument list...")
+print("Checking if the variable is already written into the interior subroutine's argument list...")
 code_qualities['MORR_TWO_MOMENT_MICRO_argstart'], code_qualities['MORR_TWO_MOMENT_MICRO_argsend'] = bracket_find(FILEPATH, code_qualities['MORR_TWO_MOMENT_MICRO_start'])
 
 varpresent  = 'no'
@@ -69,14 +70,14 @@ with open(FILEPATH, 'r') as fn:
         print('NOTE!! This code currently assumes that the subroutine defntn and call have matching argument lists!')
     else:
         print('var not present in argument list, I\'ll add it to the end')
-        line_write(FILEPATH, ','+var_oi, code_qualities['MORR_TWO_MOMENT_MICRO_argsend'])
+        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_argsend'], records_dict)
         
         print("I'll also add a corresponding variable to the argument list of this subroutine in the CALL")
         #get the location of the call to micro
         code_qualities['MORR_TWO_MOMENT_MICRO_call'] = subroutine_finder(FILEPATH, 'call MORR_TWO_MOMENT_MICRO')[0]
         #find the bracket loc
         code_qualities['MORR_TWO_MOMENT_MICRO_callargstart'], code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'] = bracket_find(FILEPATH, code_qualities['MORR_TWO_MOMENT_MICRO_call'])
-        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'])
+        line_write(FILEPATH, ','+var_oi+'&', code_qualities['MORR_TWO_MOMENT_MICRO_callargsend'],records_dict)
 
 
  # STEP 5 = create a 3D variable in the outer routine
@@ -104,16 +105,50 @@ if code_qualities['our_real_list_end'] == 0: #not edited before, find the last p
     print("This is the first time using the MP editor, I'll add in a commented line that will highlight your variables")
     print("It'll look like: ! ==== MP EDITOR VARIABLES END ===== !") 
     real_ln = real_search(FILEPATH, code_qualities['MP_MORR_TWO_MOMENT_start'], code_qualities['MP_MORR_TWO_MOMENT_end'])
-    line_write(FILEPATH, '! ==== MP EDITOR VARIABLES END ===== !', real_ln+1)
+    line_write(FILEPATH, '! ==== MP EDITOR VARIABLES END ===== !', real_ln+1, records_dict)
     code_qualities['our_real_list_end'] = real_ln
             
 ## code_qualities['our_real_list_end'] tells us where we should edit 
 print()
+
+#first check that the variable doesn't already exist!
+
 print('\n Writing 3D variable definition')
-line_write(FILEPATH, '   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi, code_qualities['our_real_list_end']+1)
+with open(FILEPATH, 'r') as fn:
+    for line in fn:
+        if 'REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi in line:
+            print("Variable definition already present, skipping")
+            break
+    
+    else: 
+        line_write(FILEPATH, '   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi, code_qualities['our_real_list_end']+1, records_dict)
 
  # STEP 6 = add to routine args list 
 #----------------------------------------------------------------
 
 #get the location of start and end brackets for mp_morr_two_moment routine 
 code_qualities['MP_MORR_TWO_MOMENT_argstart'], code_qualities['MP_MORR_TWO_MOMENT_argsend'] = bracket_find(FILEPATH, code_qualities['MP_MORR_TWO_MOMENT_start'])
+
+print()
+print('\n Writing 3D variable to argument list')
+skipit = 'no'
+with open(FILEPATH, 'r') as fn:
+    for (i, line) in enumerate(fn):
+        if  code_qualities['MP_MORR_TWO_MOMENT_argstart'] < i < code_qualities['MP_MORR_TWO_MOMENT_argsend']:
+            if var_oi in line:
+                print("Variable definition already present, skipping")
+                skipit = 'yes'
+                break
+
+if skipit == 'no':
+    line_write(FILEPATH, ','+var_oi+'&', code_qualities['MP_MORR_TWO_MOMENT_argsend'], records_dict)
+
+
+
+#FINAL STEP 
+#print summary of all line changes 
+
+try:
+    summarise(records_dict)
+except:
+    print("------> No changes made")

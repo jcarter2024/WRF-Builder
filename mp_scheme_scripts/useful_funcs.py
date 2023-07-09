@@ -236,7 +236,7 @@ def bracket_find(filepath, linestart):
     with open(filepath, 'r') as fn:
         for (i, line) in enumerate(fn):
             if linestart <= i:
-                print(line)
+ 
                 #initialise our open bracket
                 if '(' in line and bracket_count == 99:
                     bracket_count = 1
@@ -260,7 +260,6 @@ def bracket_find(filepath, linestart):
                             index_b = i
                     if index_a < index_b:
                         #bracket is within a comment
-                        print("Bracket within comment")
                         pass
                     else:
                         bracket_count -= 1
@@ -273,11 +272,15 @@ def bracket_find(filepath, linestart):
     return argstart, argsend
 
 
-def line_write(filepath, string, linenumber):
+def line_write(filepath, string, linenumber, records_dict):
+    """Records dict allows us to see what we have written historically"""
     temp = open('temp', 'w')
     with open(filepath, 'r') as f:
         for i, line in enumerate(f):
             if i == linenumber: #REAL end +1
+                print()
+                print("!! --------> Writing", string, "on linenumber", i)
+                print()
                 temp.write(string+'\n')
             temp.write(line)
     temp.close()
@@ -288,6 +291,30 @@ def line_write(filepath, string, linenumber):
     shutil.copy(filepath, filepathout)
     shutil.copy('temp', str(filepath))
     
+    #add this entry to records dict 
+    if string not in records_dict.keys():
+        records_dict[string] = linenumber 
+    else:
+        if type(records_dict[string]) == list:
+            records_dict[string] .append(linenumber)
+        else:
+            firstlistinst = []
+            firstlistinst.append(records_dict[string])
+            firstlistinst.append(linenumber)
+            records_dict[string] = firstlistinst
+
+    #adjust previous linenumbers if needed
+    for key, val in records_dict.items():
+        if type(val) == list:
+            for (p, ln) in enumerate(val):
+                if linenumber <= ln:
+                    records_dict[key][p] +=1 
+        else:
+            if val >= linenumber:
+                records_dict[key] +=1
+
+    return records_dict
+    
     
 def real_search(filepath, linestart, lineend):
     #get location of last Real call 
@@ -297,3 +324,36 @@ def real_search(filepath, linestart, lineend):
                 if 'REAL ' in line:
                     final_inst  = i
     return final_inst   
+
+
+def summarise(records_dict):
+    print()
+    print(" ================================================================================= ")
+    print("                *********> S U M M A R Y  O F  C H A N G E S <*********")
+    print("================================================================================= ")
+    print()
+
+    #first create order
+    amendments, wheremade = [], []
+    for key, ln in records_dict.items():
+        if type(ln) == list:
+            for i in ln:
+                amendments.append(key)
+                wheremade.append(i)
+        else:
+            amendments.append(key)
+            wheremade.append(ln)
+
+    #permutate both lists identically 
+    wheremade, amendments = zip(*sorted(zip(wheremade, amendments)))
+
+    #convert linenumbers to strings
+    wheremade = [str(i) for i in wheremade]
+
+    row_format ="{:85}" * (2)
+    print(row_format.format("Amendment", "Line Number"))
+    print(row_format.format("---------", "-----------"))
+    print()
+
+    for i in range(len(amendments)):
+        print(row_format.format(amendments[i], wheremade[i]))
