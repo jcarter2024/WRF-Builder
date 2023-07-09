@@ -387,6 +387,19 @@ def real_search(filepath, linestart, lineend):
     return final_inst   
 
 
+
+
+
+def big_bound(filename):
+    """superficial separation for command line readability """
+    print()
+    print("======================================================================================================|") 
+    print("======================================================================================================| ", filename)
+    print("======================================================================================================|")
+    print()
+
+
+
 def summarise(records_dict):
     """Note that records dict is now a dict of dicts!"""
     print()
