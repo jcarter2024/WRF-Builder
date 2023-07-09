@@ -236,15 +236,36 @@ def bracket_find(filepath, linestart):
     with open(filepath, 'r') as fn:
         for (i, line) in enumerate(fn):
             if linestart <= i:
+                print(line)
+                #initialise our open bracket
                 if '(' in line and bracket_count == 99:
                     bracket_count = 1
                     argstart = i
                 elif '(' in line:
                     bracket_count +=1
 
-                if ')' in line:
+                #track the close bracket that matches
+                if ')' in line and '!' not in line:
                     bracket_count -= 1
-
+                    
+                elif ')' in line and '!' in line:
+                    tmp = line.split()
+                    #iterate to determine if ! comes before )
+                    index_a = 0
+                    index_b = 0
+                    for (i, l) in enumerate(tmp):
+                        if '!' in l:
+                            index_a = i
+                        elif ')' in l:
+                            index_b = i
+                    if index_a < index_b:
+                        #bracket is within a comment
+                        print("Bracket within comment")
+                        pass
+                    else:
+                        bracket_count -= 1
+                
+                #break when we have closed our first bracket
                 if bracket_count == 0:
                     argsend  = i
                     break
