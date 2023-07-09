@@ -6,8 +6,9 @@ echo ""
 read -p "Would you like me to perform some edits? [y/n]: " confirm
 if [ $confirm == y ]; then
 
+    read -p "Enter variable name : " var_oi
+    
     #Check Variable is present
-    var_oi=$1
     if [[ -n "$var_oi" ]]; then
         echo ""
         echo "--------> Variable to be extracted is  ===> $var_oi"
