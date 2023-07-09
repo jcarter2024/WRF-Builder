@@ -301,10 +301,10 @@ def line_write(filepath, string, linenumber, records_dict):
     temp.close()
 
     #move temp to file
-    filepathout = increase_fn(filepath)
-    print(filepath,'->',  filepathout)
-    shutil.copy(filepath, filepathout)
-    shutil.copy('temp', str(filepath))
+#     filepathout = increase_fn(filepath)
+#     print(filepath,'->',  filepathout)
+#     shutil.copy(filepath, filepathout)
+    shutil.move('temp', str(filepath))
     
     #add this entry to records dict 
     if string not in records_dict.keys():
@@ -347,10 +347,10 @@ def line_append(filepath, string, linenumber, records_dict):
     temp.close()
 
     #move temp to file
-    filepathout = increase_fn(filepath)
-    print(filepath,'->',  filepathout)
-    shutil.copy(filepath, filepathout)
-    shutil.copy('temp', str(filepath))
+#     filepathout = increase_fn(filepath)
+#     print(filepath,'->',  filepathout)
+#     shutil.copy(filepath, filepathout)
+    shutil.move('temp', str(filepath))
     
     #add this entry to records dict 
     if string not in records_dict.keys():
