@@ -149,6 +149,101 @@ if skipit == 'no':
 
 
     
+# STEP 7 = add to args list in microphysics driver
+#----------------------------------------------------------------   
+#changing to new file 
+FILEPATH = 'Build_WRF/WRF/phys/module_microphysics_driver-Copy1.F'
+    
+print()
+print("Now editing microphysics driver")
+FILEPATHNEW = increase_fn(FILEPATH)
+shutil.copy(FILEPATH, FILEPATHNEW)
+
+print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
+print("I will work on the old file") 
+    
+#locate the calling subroutine     
+ROUTINE_NAME   = 'SUBROUTINE MORR_TWO_MOMENT_MICRO'
+code_qualities = {}
+
+#do a quick check to make sure that our microphysics scheme is imported 
+proceed = 'no'
+with open(FILEPATH, 'r') as fn:
+    for line in fn:
+        if 'CASE (MORR_TWO_MOMENT)' in line:
+            print('Microphysics scheme is supported by driver')
+            proceed = 'yes'
+    
+if proceed == 'yes':
+    
+    #get location of microphysics driver subroutine
+    print("checking for the current line numbers of the interior subroutine", ROUTINE_NAME)
+    code_qualities['microphysics_driver_start'], code_qualities['microphysics_driver_end'] = (
+    subroutine_finder(FILEPATH, 'SUBROUTINE microphysics_driver'))
+
+    #and get the arguments location 
+    code_qualities['microphysics_driver_argstart'], code_qualities['microphysics_driver_argsend'] = (
+    bracket_find(FILEPATH, code_qualities['microphysics_driver_start']))
+    
+    #if variable not already in there, add it 
+    #add our variable to the end of the module argument list 
+    print()
+    print('\n Writing 3D variable to argument list of mirophysics driver')
+    skipit = 'no'
+    with open(FILEPATH, 'r') as fn:
+        for (i, line) in enumerate(fn):
+            if  code_qualities['microphysics_driver_argstart'] < i < code_qualities['microphysics_driver_argsend']:
+                if var_oi in line:
+                    print("Variable definition already present, skipping")
+                    skipit = 'yes'
+                    break
+
+    if skipit == 'no':
+        line_write(FILEPATH, ','+var_oi+'&', code_qualities['microphysics_driver_argsend'],
+                   records_dict['module_microphysics_driver.F'])
+    
+    
+    #find the CALL mp_morr_two_moment brackets
+    code_qualities['mp_morr_two_moment_call'] = subroutine_finder(FILEPATH, 'CALL mp_morr_two_moment(')[0]
+    
+    code_qualities['mp_morr_two_moment_argstart'], code_qualities['mp_morr_two_moment_argsend'] = (
+    bracket_find(FILEPATH, code_qualities['mp_morr_two_moment_call']))
+    
+    #add our variable to the end of the arg list if it doesn't already exist 
+    #add our variable to the end of the module argument list 
+    print()
+    print('\n Writing variable to argument list of morrison call')
+    skipit = 'no'
+    with open(FILEPATH, 'r') as fn:
+        for (i, line) in enumerate(fn):
+            if  code_qualities['mp_morr_two_moment_argstart'] < i < code_qualities['mp_morr_two_moment_argsend']:
+                if var_oi in line:
+                    print("Variable definition already present, skipping")
+                    skipit = 'yes'
+                    break
+
+    if skipit == 'no':
+        line_write(FILEPATH, ','+var_oi+'='+var_oi+'&', code_qualities['mp_morr_two_moment_argsend'],
+               records_dict['module_microphysics_driver.F'])
+    
+    
+
+    
+    
+# STEP 8 = add to args list in solve_em
+#----------------------------------------------------------------   
+#changing to new file 
+FILEPATH = 'Build_WRF/WRF/dyn_em/solve_em-Copy1.F'
+    
+print()
+print("Now editing solve_em.F")
+FILEPATHNEW = increase_fn(FILEPATH)
+shutil.copy(FILEPATH, FILEPATHNEW)
+
+print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
+print("I will work on the old file") 
+
+
 #FINAL STEP 
 #print summary of all line changes 
 summarise(records_dict)

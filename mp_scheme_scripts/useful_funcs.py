@@ -121,10 +121,10 @@ def subroutine_finder(filepath, ROUTINE_NAME):
                 if '!' not in line:
                     tmp = line.split()
                     if 'END' in tmp:
-                        print('end', i)
+#                         print('end', i)
                         end = i
                     else:
-                        print('start', i)
+#                         print('start', i)
                         start = i
 
     return start, end
