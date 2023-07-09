@@ -45,7 +45,17 @@ print("Now locating your var", var_oi)
 #first argument passed from shell
 
 #get final line number of your variable 
-code_qualities['MYVAR_FINAL_LN'] = extract(FILEPATH, var_oi)
+try:
+    code_qualities['MYVAR_FINAL_LN'] = extract(FILEPATH, var_oi)
+except:
+    print()
+    print('---- Variable Error -----')
+    print()
+    print('----> This error occurs when the extract function cannot locate a line number for the variable you have specified')
+    print('please ensure that the variable you have specified exists within the MORR_TWO_MOMENT_MICRO subroutine')
+    sys.exit()
+    
+    
 print('last instance of your var is on line', code_qualities['MYVAR_FINAL_LN'])
 
 if code_qualities['MORR_TWO_MOMENT_MICRO_start'] < code_qualities['MYVAR_FINAL_LN'] < code_qualities['MORR_TWO_MOMENT_MICRO_end']:
