@@ -158,9 +158,52 @@ with open(FILEPATH, 'r') as fn:
 if skipit == 'no':
     line_write(FILEPATH, ','+var_oi+'&', code_qualities['MP_MORR_TWO_MOMENT_argsend'], records_dict['module mp_morr_two_moment.F'])
 
+        
+        
+#########----------------------------------------------------------------- MICROPHYSICS DRIVER
+ # STEP 7 = create a 3D variable in the microphysics driver routine
+#----------------------------------------------------------------
 
-      
-# STEP 7 = add to args list in microphysics driver
+ROUTINE_NAME   = 'SUBROUTINE microphysics_driver'
+code_qualities = {}
+
+print()
+print("checking for the current line numbers of the subroutine", ROUTINE_NAME)
+code_qualities['microphysics_driver_start'], code_qualities['microphysics_driver_end'] = subroutine_finder(FILEPATH, ROUTINE_NAME)
+
+#check if we have put in a real segment previously 
+code_qualities['our_real_list_end'] = 0
+
+with open(FILEPATH, 'r') as fn:
+    for (i, line) in enumerate(fn):
+        if '! ==== MP EDITOR VARIABLES END ===== !' in line: #we've amended previously, find latest real 
+            print("Detected previous use, appending this variable to end of list")
+            code_qualities['our_real_list_end'] = i-1
+            break 
+            
+if code_qualities['our_real_list_end'] == 0: #not edited before, find the last position of REALS 
+    print("This is the first time using the MP editor, I'll add in a commented line that will highlight your variables")
+    print("It'll look like: ! ==== MP EDITOR VARIABLES END ===== !") 
+    real_ln = real_search(FILEPATH, code_qualities['microphysics_driver_start'], code_qualities['microphysics_driver_end'])
+    line_write(FILEPATH, '! ==== MP EDITOR VARIABLES END ===== !', real_ln+1, records_dict['module_microphysics_driver.F'])
+    code_qualities['our_real_list_end'] = real_ln
+            
+## code_qualities['our_real_list_end'] tells us where we should edit 
+print()
+
+# #first check that the variable doesn't already exist!
+print('\n Writing 3D variable definition')
+with open(FILEPATH, 'r') as fn:
+    for line in fn:
+        if 'REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi in line:
+            print("Variable definition already present, skipping")
+            break
+    
+    else: 
+        line_write(FILEPATH, '   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: '+var_oi, code_qualities['our_real_list_end']+1, records_dict['module_microphysics_driver.F'])
+   
+
+# STEP 8 = add to args list in microphysics driver
 #----------------------------------------------------------------   
 big_bound("module_microphysics_driver.F")
 
@@ -241,7 +284,7 @@ if proceed == 'yes':
     
      
     
-# STEP 8 = add to args list in solve_em
+# STEP 9 = add to args list in solve_em
 #----------------------------------------------------------------   
 big_bound('solve_em.F')
 
@@ -285,7 +328,7 @@ if skipit == 'no':
     #YES I'm aware that this bisects some arguments, ultimately the code works and isn't that the aim? ;)
 
     
-# STEP 9 = Amend registry to include new var
+# STEP 10 = Amend registry to include new var
 #----------------------------------------------------------------   
 
 big_bound('Registry.EM_COMMON')
@@ -361,15 +404,16 @@ with open(FILEPATH, 'r') as fn:
                 print('adding to package expectancies [scalar]')
                 line_append(FILEPATH, ',pracg', i, records_dict['Registry.EM_COMMON'])
 
-# STEP 10 = Recompile WRF
+               
+          
+# STEP 11 = print summary of all line changes 
 #----------------------------------------------------------------  
+summarise(records_dict)   
 
 
-
-#FINAL STEP 
+#FINAL STEP Recompile WRF
 #----------------------------------------------------------------  
-#print summary of all line changes 
-summarise(records_dict)
+#added in outer shell script
 
     
  
