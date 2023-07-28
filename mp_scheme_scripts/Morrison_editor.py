@@ -164,6 +164,20 @@ if skipit == 'no':
  # STEP 7 = create a 3D variable in the microphysics driver routine
 #----------------------------------------------------------------
 
+big_bound("module_microphysics_driver.F")
+
+#changing to new file 
+FILEPATH = 'Build_WRF/WRF/phys/module_microphysics_driver.F'
+    
+print()
+print("Now editing microphysics driver")
+FILEPATHNEW = increase_fn(FILEPATH)
+shutil.copy(FILEPATH, FILEPATHNEW)
+
+print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
+print("I will work on the old file") 
+    
+#locate the calling subroutine     
 ROUTINE_NAME   = 'SUBROUTINE microphysics_driver'
 code_qualities = {}
 
@@ -205,22 +219,7 @@ with open(FILEPATH, 'r') as fn:
 
 # STEP 8 = add to args list in microphysics driver
 #----------------------------------------------------------------   
-big_bound("module_microphysics_driver.F")
-
-#changing to new file 
-FILEPATH = 'Build_WRF/WRF/phys/module_microphysics_driver.F'
-    
-print()
-print("Now editing microphysics driver")
-FILEPATHNEW = increase_fn(FILEPATH)
-shutil.copy(FILEPATH, FILEPATHNEW)
-
-print('Ive made a backup before we begin', FILEPATH, '---->', FILEPATHNEW)
-print("I will work on the old file") 
-    
-#locate the calling subroutine     
-ROUTINE_NAME   = 'SUBROUTINE MORR_TWO_MOMENT_MICRO'
-code_qualities = {}
+ROUTINE_NAME  = 'SUBROUTINE MORR_TWO_MOMENT_MICRO'
 
 #do a quick check to make sure that our microphysics scheme is imported 
 proceed = 'no'
